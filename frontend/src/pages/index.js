@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { BsCurrencyExchange } from "react-icons/bs";
 
 export default function Home() {
+  const [start, setStart] = useState(true);
   const [currencies, setCurrencies] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [currencyDate, setCurrencyDate] = useState("");
   const [currencyDetails, setCurrencyDetails] = useState({});
-  const [isShowCurrencyFrom, setIsShowCurrencyFrom] = useState(false);
+  const [isShowCurrencyFrom, setIsShowCurrencyFrom] = useState(true);
   const [isShowCurrencyTo, setIsShowCurrencyFromCurrencyTo] = useState(false);
   const [getCurrencyValueTo, setGetCurrencyValueTo] = useState({ key: null, value: null });
-  const [numberInput, setNumberInput] = useState(0);
+  const [numberInput, setNumberInput] = useState([]);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function Home() {
       console.log(res.data);
       setCurrencies(Object.entries(res.data));
       setIsShowCurrencyFrom(true);
+      setStart(false);
       setSelectedCurrency("");
     } catch (err) {
       console.error(err);
@@ -64,32 +67,24 @@ export default function Home() {
     return chunks;
   };
 
-  const chunkArray2 = (array, chunkSize) => {
-    const chunks = [];
-    for (let i = 0; i < array.length; i += chunkSize) {
-      chunks.push(array.slice(i, i + chunkSize));
-    }
-    return chunks;
-  };
-
-
   return (
     <main className="min-h-screen flex flex-col items-center bg-slate-50 font-sans">
       <div className="bg-blue-900 text-white font-bold rounded-sm p-2 flex mb-2 w-full font-sans border-gray-400 border-b-2">
-        <p className='text-xxl'>Welcome to Currency Exchange</p>
+      <BsCurrencyExchange />
+        <p className='text-xxl pl-2'>Welcome to Currency Exchange</p>
       </div>
       <button 
         onClick={handleClick} 
         className="hover:bg-black hover:text-white ml-4 p-2 border bg-white border-gray-300 rounded">
-        From Currencies
+        {start ? "Start Exchange" : "Currency From"}
       </button>
 
       {isShowCurrencyFrom && (
         <section className="mt-4">
-          <h2>Select currency from:</h2>
-          <hr className='border border-blue-300'/>
+          {start ? "" : <h2>Select currency from:</h2>}
+          {start ? "" : <hr className='border border-blue-300'/>}
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-          {chunkArray(currencies, 10).map((chunk, chunkIndex) => (
+          {chunkArray(currencies, 1).map((chunk, chunkIndex) => (
             <div key={chunkIndex} className="flex flex-col space-y-2">
               {chunk.map(([key, value]) => (
                 <button 
@@ -119,7 +114,7 @@ export default function Home() {
             <hr className='border border-blue-300'/>
           </div>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-            {chunkArray2(Object.entries(currencyDetails), 10).map((chunk, chunkIndex) => (
+            {chunkArray(Object.entries(currencyDetails), 1).map((chunk, chunkIndex) => (
             <div key={chunkIndex} className="flex flex-col space-y-2">
               {chunk.map(([key, value]) => (
                 <button 
@@ -143,6 +138,8 @@ export default function Home() {
             <input 
               type="number" 
               min="0" 
+              placeholder="Insert the nominal"
+              required
               value={numberInput}
               onChange={(e) => setNumberInput(e.target.value)} 
               className="border rounded p-2"
