@@ -4,14 +4,18 @@ import axios from 'axios';
 export default function Home() {
   const [currencies, setCurrencies] = useState([]);
   const [selectedCurrency, setSelectedCurrency] = useState("");
-  const [currencyDetails, setCurrencyDetails] = useState(null);
+  const [currencyDate, setCurrencyDate] = useState("");
+  const [currencyDetails, setCurrencyDetails] = useState({});
   const [isShow, setIsShow] = useState(false);
-  
+  const [getCurrencyValueTo, setGetCurrencyValueTo] = useState(0)
+
   useEffect(() => {
     if (selectedCurrency) {
       axios.get(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${selectedCurrency}.json`)
         .then((res) => {
           console.log(res.data);
+          setCurrencyDate(res.data.date || "Date not available");
+          setCurrencyDetails(res.data[selectedCurrency] || {});
         })
         .catch((err) => {
           console.log(err);
@@ -33,12 +37,14 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col justify-center items-center bg-slate-50 font-sans">
-      <div>Welcome to Currency Exchange</div>
+    <main className="min-h-screen flex flex-col items-center bg-slate-50 font-sans">
+      <div className="bg-gray-300 rounded-sm p-2 flex mb-2 w-full font-sans">
+        Welcome to Currency Exchange
+      </div>
       <button 
         onClick={handleClick} 
         className="hover:bg-black hover:text-white ml-4 p-2 border bg-white border-gray-300 rounded">
-        Click Me
+        From Currencies
       </button>
 
       {isShow && (
@@ -47,6 +53,8 @@ export default function Home() {
             <button 
               onClick={() => {
                 setSelectedCurrency(key);
+                console.log(selectedCurrency);
+                setIsShow(false);
               }} 
               key={key} 
               className="block hover:bg-slate-400 rounded-md p-2">
@@ -56,12 +64,25 @@ export default function Home() {
         </section>
       )}
 
-      {/* {isShow && currencyDetails && (
+      {!isShow && selectedCurrency && (
         <section className="mt-4">
           <h2>Details for {selectedCurrency}</h2>
-          <pre>{JSON.stringify(currencyDetails, null, 2)}</pre>
+          <p>Date: {currencyDate}</p>
+          <div>
+            {Object.entries(currencyDetails).map(([key, value]) => (
+              <button 
+                key={key}
+                onClick={() =>{
+                  setGetCurrencyValueTo(value)
+                  console.log(getCurrencyValueTo)
+                }}
+                className="block hover:bg-slate-400 rounded-md p-2">
+                {key}: {value}
+              </button>
+            ))}
+          </div>
         </section>
-      )} */}
+      )}
     </main>
   );
 }
