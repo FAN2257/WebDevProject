@@ -6,8 +6,8 @@ export default function Home() {
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [currencyDate, setCurrencyDate] = useState("");
   const [currencyDetails, setCurrencyDetails] = useState({});
-  const [isShowCurrencyFrom, setIsShow] = useState(false);
-  const [isShowCurrencyTo, setIsShowCurrencyTo] = useState(false);
+  const [isShowCurrencyFrom, setIsShowCurrencyFrom] = useState(false);
+  const [isShowCurrencyTo, setIsShowCurrencyFromCurrencyTo] = useState(false);
   const [getCurrencyValueTo, setGetCurrencyValueTo] = useState({ key: null, value: null });
   const [numberInput, setNumberInput] = useState(0);
   const [result, setResult] = useState(null);
@@ -37,7 +37,7 @@ export default function Home() {
       const res = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json');
       console.log(res.data);
       setCurrencies(Object.entries(res.data));
-      setIsShow(!isShowCurrencyFrom);
+      setIsShowCurrencyFrom(true);
       setSelectedCurrency("");
     } catch (err) {
       console.error(err);
@@ -46,7 +46,7 @@ export default function Home() {
 
   const handleCurrencyDetailsClick = (key, value) => {
     setGetCurrencyValueTo({ key, value });
-    setIsShowCurrencyTo(false); 
+    setIsShowCurrencyFromCurrencyTo(false); 
   };
 
   const handleFormSubmit = (e) => {
@@ -56,10 +56,27 @@ export default function Home() {
     }
   };
 
+  const chunkArray = (array, chunkSize) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+  };
+
+  const chunkArray2 = (array, chunkSize) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+      chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+  };
+
+
   return (
     <main className="min-h-screen flex flex-col items-center bg-slate-50 font-sans">
-      <div className="bg-gray-300 font-bold rounded-sm p-2 flex mb-2 w-full font-sans border-gray-400 border-b-2">
-        <h1>Welcome to Currency Exchange</h1>
+      <div className="bg-blue-900 text-white font-bold rounded-sm p-2 flex mb-2 w-full font-sans border-gray-400 border-b-2">
+        <p className='text-xxl'>Welcome to Currency Exchange</p>
       </div>
       <button 
         onClick={handleClick} 
@@ -69,37 +86,51 @@ export default function Home() {
 
       {isShowCurrencyFrom && (
         <section className="mt-4">
-          {currencies.map(([key, value]) => (
-            <button 
-              onClick={() => {
-                setSelectedCurrency(key);
-                console.log(selectedCurrency);
-                setIsShow(false);
-                setIsShowCurrencyTo(true);
-              }} 
-              key={key} 
-              className="block hover:bg-slate-400 rounded-md p-2">
-              {key}: {value}
-              <hr className='border border-black'/>
-            </button>
+          <h2>Select currency from:</h2>
+          <hr className='border border-blue-300'/>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+          {chunkArray(currencies, 10).map((chunk, chunkIndex) => (
+            <div key={chunkIndex} className="flex flex-col space-y-2">
+              {chunk.map(([key, value]) => (
+                <button 
+                  onClick={() => {
+                    setSelectedCurrency(key);
+                    console.log(selectedCurrency);
+                    setIsShowCurrencyFrom(false);
+                    setIsShowCurrencyFromCurrencyTo(true);
+                  }} 
+                  key={key} 
+                  className="block hover:bg-slate-400 rounded-md p-2">
+                  {key}: {value}
+                  <hr className='border border-black'/>
+                </button>
+              ))}
+            </div>
           ))}
+          </div>
         </section>
       )}
 
       {!isShowCurrencyFrom && isShowCurrencyTo && (
         <section className="mt-4">
-          <h2>Details for {selectedCurrency}</h2>
-          <p>Date: {currencyDate}</p>
-          <hr className='border border-blue-300'/>
-          <div>
-            {Object.entries(currencyDetails).map(([key, value]) => (
-              <button 
-                key={key}
-                onClick={() => handleCurrencyDetailsClick(key, value)}
-                className="block hover:bg-slate-400 rounded-md p-2">
-                {key}: {value}
-                <hr className='border border-black'/>
-              </button>
+          <div className='#'>
+            <h2>Select currency exchange to (displayed convert currency from 1 {selectedCurrency}):</h2>
+            <p>Date: {currencyDate}</p>
+            <hr className='border border-blue-300'/>
+          </div>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
+            {chunkArray2(Object.entries(currencyDetails), 10).map((chunk, chunkIndex) => (
+            <div key={chunkIndex} className="flex flex-col space-y-2">
+              {chunk.map(([key, value]) => (
+                <button 
+                  key={key}
+                  onClick={() => handleCurrencyDetailsClick(key, value)}
+                  className="block hover:bg-slate-400 rounded-md p-2">
+                  {key}: {value}
+                  <hr className='border border-black'/>
+                </button>
+              ))}
+            </div>
             ))}
           </div>
         </section>
