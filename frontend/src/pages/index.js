@@ -6,10 +6,11 @@ export default function Home() {
   const [selectedCurrency, setSelectedCurrency] = useState("");
   const [currencyDate, setCurrencyDate] = useState("");
   const [currencyDetails, setCurrencyDetails] = useState({});
-  const [isShow, setIsShow] = useState(false);
-  const [isShowSelectedCurrency, setIsShowSelectedCurrency] = useState(false);
-  const [getCurrencyValueTo, setGetCurrencyValueTo] = useState({ value: null });
+  const [isShowCurrencyFrom, setIsShow] = useState(false);
+  const [isShowCurrencyTo, setIsShowCurrencyTo] = useState(false);
+  const [getCurrencyValueTo, setGetCurrencyValueTo] = useState({ key: null, value: null });
   const [numberInput, setNumberInput] = useState(0);
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
     if (selectedCurrency) {
@@ -27,7 +28,6 @@ export default function Home() {
 
   useEffect(() => {
     if (getCurrencyValueTo.value !== null) {
-      // Perform actions that depend on getCurrencyValueTo here
       console.log('getCurrencyValueTo updated:', getCurrencyValueTo);
     }
   }, [getCurrencyValueTo]);
@@ -37,24 +37,23 @@ export default function Home() {
       const res = await axios.get('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies.json');
       console.log(res.data);
       setCurrencies(Object.entries(res.data));
-      setIsShow(!isShow);
-      setSelectedCurrency(!selectedCurrency);
+      setIsShow(!isShowCurrencyFrom);
+      setSelectedCurrency("");
     } catch (err) {
       console.error(err);
-    } finally {
-      console.log('axios request finished');
     }
   };
 
   const handleCurrencyDetailsClick = (key, value) => {
-    setGetCurrencyValueTo({ value });
-    setIsShowSelectedCurrency(false); 
+    setGetCurrencyValueTo({ key, value });
+    setIsShowCurrencyTo(false); 
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    console.log('Number input:', numberInput);
-    // Handle the form submission logic here
+    if (getCurrencyValueTo.value !== null) {
+      setResult(numberInput * getCurrencyValueTo.value);
+    }
   };
 
   return (
@@ -68,7 +67,7 @@ export default function Home() {
         From Currencies
       </button>
 
-      {isShow && (
+      {isShowCurrencyFrom && (
         <section className="mt-4">
           {currencies.map(([key, value]) => (
             <button 
@@ -76,20 +75,22 @@ export default function Home() {
                 setSelectedCurrency(key);
                 console.log(selectedCurrency);
                 setIsShow(false);
-                setIsShowSelectedCurrency(true);
+                setIsShowCurrencyTo(true);
               }} 
               key={key} 
               className="block hover:bg-slate-400 rounded-md p-2">
               {key}: {value}
+              <hr className='border border-black'/>
             </button>
           ))}
         </section>
       )}
 
-      {!isShow && isShowSelectedCurrency && (
+      {!isShowCurrencyFrom && isShowCurrencyTo && (
         <section className="mt-4">
           <h2>Details for {selectedCurrency}</h2>
           <p>Date: {currencyDate}</p>
+          <hr className='border border-blue-300'/>
           <div>
             {Object.entries(currencyDetails).map(([key, value]) => (
               <button 
@@ -97,13 +98,14 @@ export default function Home() {
                 onClick={() => handleCurrencyDetailsClick(key, value)}
                 className="block hover:bg-slate-400 rounded-md p-2">
                 {key}: {value}
+                <hr className='border border-black'/>
               </button>
             ))}
           </div>
         </section>
       )}
 
-      {!isShow && !isShowSelectedCurrency && (
+      {!isShowCurrencyFrom && !isShowCurrencyTo && (
         <section className="mt-4">
           <h2>Type The Nominal</h2>
           <form onSubmit={handleFormSubmit}>
@@ -118,6 +120,12 @@ export default function Home() {
               Submit
             </button>
           </form>
+          {result !== null && (
+            <div className="mt-4">
+              <h3>Value from {selectedCurrency} to {getCurrencyValueTo.key}: {result}</h3>
+              <p>Date: {currencyDate}</p>
+            </div>
+          )}
         </section>
       )}
     </main>
